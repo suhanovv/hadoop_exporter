@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"io/ioutil"
+	"github.com/wyukawa/hadoop_exporter/utils"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -18,6 +18,12 @@ var (
 	listenAddress      = flag.String("web.listen-address", ":9088", "Address on which to expose metrics and web interface.")
 	metricsPath        = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	resourceManagerUrl = flag.String("resourcemanager.url", "http://localhost:8088", "Hadoop ResourceManager URL.")
+	useKerberos        = flag.Bool("useKerberos", false, "Enabled Kerberos or not")
+	krbConfig          = flag.String("krbConfigPath", "/etc/krb5.conf", "Path for kerberos config")
+	principal          = flag.String("principal", "", "")
+	keytabPath         = flag.String("keytabPath", "", "Keytab path")
+	realm              = flag.String("realm", "EXAMPLE.COM", "Kerberos realm")
+	spn                = flag.String("spn", "HTTP/_HOST", "spn")
 )
 
 type Exporter struct {
@@ -197,12 +203,15 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements the prometheus.Collector interface.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	resp, err := http.Get(e.url + "/ws/v1/cluster/metrics")
-	if err != nil {
-		log.Error(err)
+	var data []byte
+	var err error = nil
+
+	if *useKerberos == true {
+		data, err = utils.GetKerberizedData(e.url+"/ws/v1/cluster/metrics", *krbConfig, *principal, *keytabPath, *realm, *spn)
+	} else {
+		data, err = utils.GetData(e.url + "/ws/v1/cluster/metrics")
 	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		log.Error(err)
 	}
