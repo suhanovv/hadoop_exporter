@@ -9,6 +9,14 @@ go build namenode_exporter.go
 go build resourcemanager_exporter.go
 ```
 
+or if golang 1.11+
+```
+export GO111MODULE=on
+go build namenode_exporter.go
+go build resourcemanager_exporter.go
+
+```
+
 Help on flags of namenode_exporter:
 ```
 -namenode.jmx.url string
@@ -17,6 +25,14 @@ Help on flags of namenode_exporter:
     Address on which to expose metrics and web interface. (default ":9070")
 -web.telemetry-path string
     Path under which to expose metrics. (default "/metrics")
+```
+If you use kerberized cluster:
+```
+--useKerberos
+--principal principalname
+--keytabPath /path/to/keytab/file.keytab
+--realm EXAMPLE.COM
+--spn HTTP/hostname
 ```
 
 Help on flags of resourcemanager_exporter:
@@ -28,5 +44,13 @@ Help on flags of resourcemanager_exporter:
 -web.telemetry-path string
     Path under which to expose metrics. (default "/metrics")
 ```
+If you use kerberized cluster:
+```
+--useKerberos
+--principal principalname
+--keytabPath /path/to/keytab/file.keytab
+--realm EXAMPLE.COM
+--spn HTTP/hostname
+```
 
-Tested on HDP2.3
+Tested on HDP3.1
